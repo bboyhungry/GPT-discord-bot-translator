@@ -1,7 +1,5 @@
-const { discordCommand } = require("./global.js");
-
+const { discordCommand } = require("./discord_config.js");
 require("dotenv").config();
-
 const axios = require('axios');
 
 // Load english language model — light version.
@@ -44,20 +42,8 @@ client.on("messageCreate", async message => {
 
   if (message.content.startsWith(discordCommand)) {
     try {
-      // split the user message
-      const originalMessage = message.content.split(" ");
-
-      // last substring of the string which is going to be the language
-      const targetLanguage = originalMessage.pop();
-      
-      // remove the first element, which is going to be the discord command
-      originalMessage.shift();
-
-      const sourceText = originalMessage.join(" ");
-
       const response = await axios.post('http://localhost:3000/translate', {
-        sourceText,
-        targetLanguage,
+        userMessage: message.content,
       });
       message.reply(response.data.translation);
     } catch (error) {
