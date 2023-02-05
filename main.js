@@ -16,6 +16,7 @@ const client = new Discord.Client({
     ],
 });
 
+// TODO: use this function to extract the langauge entity when parsing the string
 function parseMessage(message) {
   // Instantiate winkNLP.
   const nlp = winkNLP(model);

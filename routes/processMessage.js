@@ -1,7 +1,6 @@
 const express = require('express');
-const openaiPackage =  require('openai');
 const axios = require('axios');
-const { openai } = require("./openai-client");
+const { openai } = require("../openai_config.js");
 require("dotenv").config();
 
 const app = express();
