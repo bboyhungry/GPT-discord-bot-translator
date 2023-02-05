@@ -1,3 +1,4 @@
+const { discordCommand } = require("./discord_config.js");
 require("dotenv").config();
 const axios = require('axios');
 
@@ -7,7 +8,6 @@ const winkNLP = require('wink-nlp');
 const model = require('wink-eng-lite-web-model');
 
 const Discord = require("discord.js");
-const { ALLOWED_EXTENSIONS } = require("discord.js");
 const client = new Discord.Client({
     intents: [
         Discord.GatewayIntentBits.Guilds,
@@ -16,6 +16,7 @@ const client = new Discord.Client({
     ],
 });
 
+// TODO: use this function to extract the langauge entity when parsing the string
 function parseMessage(message) {
   // Instantiate winkNLP.
   const nlp = winkNLP(model);
@@ -40,12 +41,12 @@ client.on("messageCreate", async message => {
   // Check if the message is from a user (not another bot)
   if (message.author.bot) return;
 
-  if (message.content === "!translate") {
+  if (message.content.startsWith(discordCommand)) {
     try {
       const response = await axios.post('http://localhost:3000/translate', {
-        text: message.content
+        userMessage: message.content,
       });
-      message.reply(response.data.text);
+      message.reply(response.data.translation);
     } catch (error) {
       console.error(error);
     }
