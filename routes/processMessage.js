@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const { openai } = require("../openai_config.js");
+const { DEFAULT_LANGUAGE } = require("../config.js");
 require("dotenv").config();
 
 const app = express();
@@ -11,24 +12,27 @@ app.post('/translate', async (req, res) => {
   try {
     const { userMessage } = req.body;
 
-    // split the user message
-    originalMessageArr = userMessage.split(" ");
+    const regEx = /<(.*?)>/g;
+    const extraTextRegEx = /.+?<(.*?)>.+?<(.*?)>.+?/
+    const extraTextFormat = userMessage.match(extraTextRegEx);
 
-    // last substring of the string which is going to be the language
-    const targetLanguage = originalMessageArr.pop();
+    if (extraTextFormat){
+      console.error("Incorrect format");
+      return;
+    }
+    const textAndLanguageMatches = userMessage.match(regEx);
 
-    // remove the first element, which is going to be the discord command
-    originalMessageArr.shift();
 
-    const sourceText = originalMessageArr.join(" ")
+    // we start at index 1 and go all the way to the last element  (exclusive)
+    const [sourceText, targetLanguage] = textAndLanguageMatches.map(match => match.slice(1, -1));
 
     const completion = await openai.createCompletion({
         // The ID of the language model to use for text generation
-        // List of GPT-3 model: https://platform.openai.com/docs/models/gpt-3
+        // List of GPT-3 models: https://platform.openai.com/docs/models/gpt-3
         model: "text-davinci-003",
         // The prompt to provide to the model
-        prompt: `Translate the following text to ${targetLanguage}: ${sourceText}`,
-        // Controls the creativity/diversity of the generated tex
+        prompt: `Translate the following text to ${targetLanguage ? `${targetLanguage}` : `${DEFAULT_LANGUAGE}` }: ${sourceText}`,
+        // Controls the creativity/diversity of the generated text
         temperature: 0.3,
         // The maximum number of tokens (words) to generate in the response
         max_tokens: 2048,
