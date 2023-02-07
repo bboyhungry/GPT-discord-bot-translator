@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const { openai } = require("../openai_config.js");
 const { DEFAULT_LANGUAGE } = require("../config.js");
+const { DISCORD_COMMAND } = require('../discord_config.js');
 require("dotenv").config();
 
 const app = express();
@@ -13,18 +14,21 @@ app.post('/translate', async (req, res) => {
     const { userMessage } = req.body;
 
     const regEx = /<(.*?)>/g;
-    const extraTextRegEx = /.+?<(.*?)>.+?<(.*?)>.+?/
-    const extraTextFormat = userMessage.match(extraTextRegEx);
+    const correctFormatRegEx = /^<.+?> <.+?>$|^<.+?>/;
+    const correctFormat = userMessage.match(correctFormatRegEx);
 
-    if (extraTextFormat){
+    if (!correctFormat){
       console.error("Incorrect format");
+      res.send({ translation: "Whoopsie daisy! " + 
+      "It looks like you didn't enter the correct format. " + 
+      "Let's try this again, shall we? " + 
+      "It should be !translate <source text> <target language>. " + 
+      "And no extra nonsense, please." });
       return;
     }
+
     const textAndLanguageMatches = userMessage.match(regEx);
-
-
-    // we start at index 1 and go all the way to the last element  (exclusive)
-    const [sourceText, targetLanguage] = textAndLanguageMatches.map(match => match.slice(1, -1));
+    const [sourceText, targetLanguage] = textAndLanguageMatches.map(match => match.replace(/<|>/g, ''));
 
     const completion = await openai.createCompletion({
         // The ID of the language model to use for text generation
