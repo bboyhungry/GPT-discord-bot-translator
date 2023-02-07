@@ -1,3 +1,3 @@
-const discordCommand = "!translate";
+const DISCORD_COMMAND = "!translate";
 
-module.exports = { discordCommand };
+module.exports = {  DISCORD_COMMAND };

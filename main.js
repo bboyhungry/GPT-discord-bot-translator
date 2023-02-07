@@ -1,4 +1,4 @@
-const { discordCommand } = require("./discord_config.js");
+const { DISCORD_COMMAND } = require("./discord_config.js");
 require("dotenv").config();
 const axios = require('axios');
 
@@ -29,7 +29,7 @@ function parseMessage(message) {
 
   const doc = nlp.readDoc(message);
   const tokens = doc.tokens().out();
-  tokens.shift();
+ 
   return (tokens.toString());
 }
 
@@ -40,11 +40,11 @@ client.on("ready", () => {
 client.on("messageCreate", async message => {
   // Check if the message is from a user (not another bot)
   if (message.author.bot) return;
-
-  if (message.content.startsWith(discordCommand)) {
+  
+  if (message.content.startsWith(DISCORD_COMMAND)) {
     try {
       const response = await axios.post('http://localhost:3000/translate', {
-        userMessage: message.content,
+        userMessage: message.content.slice(DISCORD_COMMAND.length).trim(),
       });
       message.reply(response.data.translation);
     } catch (error) {
