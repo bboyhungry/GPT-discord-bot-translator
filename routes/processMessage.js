@@ -2,7 +2,6 @@ const express = require('express');
 const axios = require('axios');
 const { openai } = require("../openai_config.js");
 const { DEFAULT_LANGUAGE } = require("../config.js");
-const { DISCORD_COMMAND } = require('../discord_config.js');
 require("dotenv").config();
 
 const app = express();
@@ -14,6 +13,8 @@ app.post('/translate', async (req, res) => {
     const { userMessage } = req.body;
 
     const regEx = /<(.*?)>/g;
+
+    // Regular expression that will capture strings like <string> <string> or <string>
     const correctFormatRegEx = /^<.+?> <.+?>$|^<.+?>/;
     const correctFormat = userMessage.match(correctFormatRegEx);
 
@@ -28,6 +29,8 @@ app.post('/translate', async (req, res) => {
     }
 
     const textAndLanguageMatches = userMessage.match(regEx);
+
+    // parse out the source text and the target language from the user message
     const [sourceText, targetLanguage] = textAndLanguageMatches.map(match => match.replace(/<|>/g, ''));
 
     const completion = await openai.createCompletion({

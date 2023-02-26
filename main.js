@@ -1,4 +1,5 @@
 const { DISCORD_COMMAND } = require("./discord_config.js");
+const { ERROR_MESSAGES } = require("./error_config.js");
 require("dotenv").config();
 const axios = require('axios');
 
@@ -49,6 +50,7 @@ client.on("messageCreate", async message => {
       message.reply(response.data.translation);
     } catch (error) {
       console.error(error);
+      message.reply(ERROR_MESSAGES[error.response.status] || "Something went wrong");
     }
   }
 });
