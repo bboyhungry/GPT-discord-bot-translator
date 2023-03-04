@@ -2,7 +2,6 @@ const express = require('express');
 const axios = require('axios');
 const { openai } = require("../openai_config.js");
 const { DEFAULT_LANGUAGE } = require("../config.js");
-const { DISCORD_COMMAND } = require('../discord_config.js');
 require("dotenv").config();
 
 const app = express();
@@ -14,12 +13,14 @@ app.post('/translate', async (req, res) => {
     const { userMessage } = req.body;
 
     const regEx = /<(.*?)>/g;
+
+    // Regular expression that will capture strings like <string> <string> or <string>
     const correctFormatRegEx = /^<.+?> <.+?>$|^<.+?>/;
     const correctFormat = userMessage.match(correctFormatRegEx);
 
     if (!correctFormat){
       console.error("Incorrect format");
-      res.send({ translation: "Whoopsie daisy! " + 
+      res.status(400).send({ translation: "Whoopsie daisy! " + 
       "It looks like you didn't enter the correct format. " + 
       "Let's try this again, shall we? " + 
       "It should be !translate <source text> <target language>. " + 
@@ -28,6 +29,8 @@ app.post('/translate', async (req, res) => {
     }
 
     const textAndLanguageMatches = userMessage.match(regEx);
+
+    // parse out the source text and the target language from the user message
     const [sourceText, targetLanguage] = textAndLanguageMatches.map(match => match.replace(/<|>/g, ''));
 
     const completion = await openai.createCompletion({
@@ -47,7 +50,8 @@ app.post('/translate', async (req, res) => {
         // Controls the impact of token presence on the generated text
         presence_penalty: 0.0,
     });
-    res.send({ translation: completion.data.choices.length > 0 ? completion.data.choices[0].text : "Message can not be translated" });
+
+    res.status(500).send({ translation: completion.data.choices.length > 0 ? completion.data.choices[0].text : "Message can not be translated" });
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: 'Something went wrong' });
