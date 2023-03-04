@@ -20,7 +20,7 @@ app.post('/translate', async (req, res) => {
 
     if (!correctFormat){
       console.error("Incorrect format");
-      res.send({ translation: "Whoopsie daisy! " + 
+      res.status(400).send({ translation: "Whoopsie daisy! " + 
       "It looks like you didn't enter the correct format. " + 
       "Let's try this again, shall we? " + 
       "It should be !translate <source text> <target language>. " + 
@@ -50,7 +50,8 @@ app.post('/translate', async (req, res) => {
         // Controls the impact of token presence on the generated text
         presence_penalty: 0.0,
     });
-    res.send({ translation: completion.data.choices.length > 0 ? completion.data.choices[0].text : "Message can not be translated" });
+
+    res.status(500).send({ translation: completion.data.choices.length > 0 ? completion.data.choices[0].text : "Message can not be translated" });
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: 'Something went wrong' });
